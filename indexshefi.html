@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SHEFI Excel Processor</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .container {
+            padding-top: 5vh;
+            padding-bottom: 5vh;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            backdrop-filter: blur(10px);
+            background: rgba(255, 255, 255, 0.95);
+        }
+        
+        .card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 20px 20px 0 0 !important;
+            padding: 2rem;
+            text-align: center;
+        }
+        
+        .card-header h1 {
+            margin: 0;
+            font-weight: 700;
+            font-size: 2.5rem;
+        }
+        
+        .card-header p {
+            margin: 0.5rem 0 0 0;
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+        
+        .card-body {
+            padding: 3rem;
+        }
+        
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 3rem;
+            text-align: center;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+            transition: all 0.3s ease;
+            margin-bottom: 2rem;
+        }
+        
+        .upload-area:hover {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%);
+            transform: translateY(-2px);
+        }
+        
+        .upload-area i {
+            font-size: 4rem;
+            color: #667eea;
+            margin-bottom: 1rem;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+            border-radius: 50px;
+            padding: 1rem 3rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .form-control {
+            border-radius: 15px;
+            border: 2px solid #e1e8ed;
+            padding: 1rem;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .form-control:focus {
+            border-color: #667eea;
+            box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        }
+        
+        .alert {
+            border-radius: 15px;
+            border: none;
+            padding: 1rem 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .alert-success {
+            background: linear-gradient(135deg, rgba(40, 167, 69, 0.1) 0%, rgba(40, 167, 69, 0.05) 100%);
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+        
+        .alert-danger {
+            background: linear-gradient(135deg, rgba(220, 53, 69, 0.1) 0%, rgba(220, 53, 69, 0.05) 100%);
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+        
+        .loading-spinner {
+            display: none;
+        }
+        
+        .processing .loading-spinner {
+            display: inline-block;
+        }
+        
+        .processing .btn-text {
+            display: none;
+        }
+        
+        .info-section {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+            border-radius: 15px;
+            padding: 2rem;
+            margin-top: 2rem;
+        }
+        
+        .info-section h5 {
+            color: #667eea;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+        
+        .info-section ul {
+            margin-bottom: 0;
+        }
+        
+        .info-section li {
+            margin-bottom: 0.5rem;
+        }
+        
+        @media (max-width: 768px) {
+            .card-header h1 {
+                font-size: 2rem;
+            }
+            
+            .card-body {
+                padding: 2rem;
+            }
+            
+            .upload-area {
+                padding: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 col-md-10">
+                <div class="card">
+                    <div class="card-header">
+                        <h1><i class="fas fa-file-excel me-3"></i>SHEFI Excel Processor</h1>
+                        <p>Transform your SHEFI Excel files into GATI format automatically</p>
+                    </div>
+                    <div class="card-body">
+                        <!-- Flash Messages -->
+                        {% with messages = get_flashed_messages(with_categories=true) %}
+                            {% if messages %}
+                                {% for category, message in messages %}
+                                    <div class="alert alert-{{ 'danger' if category == 'error' else 'success' }} alert-dismissible fade show" role="alert">
+                                        <i class="fas fa-{{ 'exclamation-triangle' if category == 'error' else 'check-circle' }} me-2"></i>
+                                        {{ message }}
+                                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                                    </div>
+                                {% endfor %}
+                            {% endif %}
+                        {% endwith %}
+
+                        <!-- Main Form -->
+                        <form method="POST" action="/process" enctype="multipart/form-data" id="uploadForm">
+                            <!-- File Upload Area -->
+                            <div class="upload-area" id="uploadArea">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <h4>Choose SHEFI Excel File</h4>
+                                <p class="text-muted mb-3">Drag and drop your .xlsx or .xls file here, or click to browse</p>
+                                <input type="file" class="form-control" name="file" id="fileInput" accept=".xlsx,.xls" required style="display: none;">
+                                <button type="button" class="btn btn-outline-primary" onclick="document.getElementById('fileInput').click();">
+                                    <i class="fas fa-folder-open me-2"></i>Browse Files
+                                </button>
+                                <div id="fileName" class="mt-3" style="display: none;">
+                                    <i class="fas fa-file-excel text-success me-2"></i>
+                                    <span id="fileNameText"></span>
+                                </div>
+                            </div>
+
+                            <!-- Submit Button -->
+                            <div class="text-center">
+                                <button type="submit" class="btn btn-primary btn-lg" id="processBtn">
+                                    <span class="loading-spinner">
+                                        <i class="fas fa-spinner fa-spin me-2"></i>Processing...
+                                    </span>
+                                    <span class="btn-text">
+                                        <i class="fas fa-magic me-2"></i>Process SHEFI File
+                                    </span>
+                                </button>
+                            </div>
+                        </form>
+
+                        <!-- Information Section -->
+                        <div class="info-section">
+                            <h5><i class="fas fa-info-circle me-2"></i>How it works:</h5>
+                            <ul class="list-unstyled">
+                                <li><i class="fas fa-check text-success me-2"></i>Upload your SHEFI Excel file (.xlsx or .xls)</li>
+                                <li><i class="fas fa-check text-success me-2"></i>The app automatically reads PO value from cell A2</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Data is processed starting from row 11</li>
+                                <li><i class="fas fa-check text-success me-2"></i>All required columns are added and formatted</li>
+                                <li><i class="fas fa-check text-success me-2"></i>Download the processed GATI format file</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.1.3/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // File input handling
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            const fileName = e.target.files[0]?.name;
+            if (fileName) {
+                document.getElementById('fileNameText').textContent = fileName;
+                document.getElementById('fileName').style.display = 'block';
+            }
+        });
+
+        // Drag and drop functionality
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, preventDefaults, false);
+            document.body.addEventListener(eventName, preventDefaults, false);
+        });
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            uploadArea.addEventListener(eventName, unhighlight, false);
+        });
+
+        uploadArea.addEventListener('drop', handleDrop, false);
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        function highlight(e) {
+            uploadArea.style.backgroundColor = 'rgba(102, 126, 234, 0.3)';
+        }
+
+        function unhighlight(e) {
+            uploadArea.style.backgroundColor = '';
+        }
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+
+            if (files.length > 0) {
+                fileInput.files = files;
+                const fileName = files[0].name;
+                document.getElementById('fileNameText').textContent = fileName;
+                document.getElementById('fileName').style.display = 'block';
+            }
+        }
+
+        // Form submission handling
+        document.getElementById('uploadForm').addEventListener('submit', function(e) {
+            const processBtn = document.getElementById('processBtn');
+            processBtn.classList.add('processing');
+            processBtn.disabled = true;
+        });
+
+        // Auto-dismiss alerts after 5 seconds
+        setTimeout(function() {
+            const alerts = document.querySelectorAll('.alert');
+            alerts.forEach(function(alert) {
+                const bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            });
+        }, 5000);
+    </script>
+</body>
+</html>
